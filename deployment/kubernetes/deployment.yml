@@ -1,13 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment 
 metadata: 
-  name: graphql-api
+  name: graphql-gateway
   namespace: api
 spec: 
   replicas: 2
   selector:
     matchLabels:
-      app: graphql-api
+      app: graphql-gateway
   strategy: 
     type: RollingUpdate 
     rollingUpdate: 
@@ -16,11 +16,11 @@ spec:
   template: 
     metadata: 
       labels: 
-        app: graphql-api
+        app: graphql-gateway
     spec: 
       containers: 
-        - name: graphql-api
-          image: crdschurch/crds-graphql-api:$DOCKER_TAG 
+        - name: graphql-gateway
+          image: crdschurch/crds-graphql-gateway:$DOCKER_TAG 
           imagePullPolicy: Always 
           ports: 
             - containerPort: 80 

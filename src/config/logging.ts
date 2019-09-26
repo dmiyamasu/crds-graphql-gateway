@@ -4,7 +4,7 @@ import { injectable } from 'inversify';
 
 @injectable()
 export class Logger {
-    private application: string = 'graphql-api';
+    private application: string = 'graphql-gateway';
     public client;
 
     constructor() {

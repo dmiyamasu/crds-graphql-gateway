@@ -1,26 +1,16 @@
-import { ApolloServer, makeExecutableSchema } from "apollo-server-express";
+import { ApolloServer } from "apollo-server-express";
 import { Express } from "express";
 import * as http from "http";
 import { inject, injectable } from "inversify";
 import { Types } from "./ioc/types";
-import schema from "./schema";
-import resolvers from "./resolvers";
 import { IAuthConnector } from "./graph/auth/auth.interface";
-import { IUsersAPI } from "./graph/users/users.interface";
-import { ISitesAPI } from "./graph/sites/sites.interface";
 import { RedisCache } from "apollo-server-cache-redis";
 import responseCachePlugin from "apollo-server-plugin-response-cache";
 import { Analytics } from "./config/analytics";
 import { Logger } from "./config/logging";
-import { IContentConnector } from "./graph/content/content.interface";
-import { IGroupsAPI } from "./graph/groups/groups.interface";
 import { IDataSources } from "./graph/context/context.interface";
-import { Mongo } from "./sources/mongo";
-import { UsersMongo } from "./graph/users/users.mongo";
-import { UsersAPI } from "./graph/users/users.api";
-import { SitesAPI } from "./graph/sites/sites.api";
-import { GroupsAPI } from "./graph/groups/groups.api";
 import { IRestAuth } from "./sources/mp";
+import { ApolloGateway } from "@apollo/gateway";
 
 @injectable()
 export class GraphqlServer {
@@ -32,7 +22,6 @@ export class GraphqlServer {
 
   constructor(
     @inject(Types.AuthConnector) private authAPI: IAuthConnector,
-    @inject(Types.ContentConnector) private contentConnector: IContentConnector,
     @inject(Types.Analytics) private analytics: Analytics,
     @inject(Types.Logger) private logger: Logger,
     @inject(Types.RestAuth) private restAuth: IRestAuth,
@@ -41,14 +30,14 @@ export class GraphqlServer {
   public async start(): Promise<void> {
     let app = this.app;
 
-    const usersCollection = await Mongo.getCollection("users");
+    const gateway = new ApolloGateway({
+      serviceList: [
+        { name: 'content', url: 'http://localhost:8001' },
+      ],
+    });
 
     const server = new ApolloServer({
-      schema: makeExecutableSchema({
-        typeDefs: schema,
-        resolvers,
-        inheritResolversFromInterfaces: true
-      }),
+      gateway,
       context: ({ req }) => {
         if (req.body.query.includes("IntrospectionQuery")) return;
         const token = req.headers.authorization || "";
@@ -58,11 +47,6 @@ export class GraphqlServer {
       },
       dataSources: (): any => {
         return <IDataSources>{
-          usersAPI: new UsersAPI(this.restAuth),
-          usersMongo: new UsersMongo({ usersCollection }),
-          sitesAPI: new SitesAPI(this.restAuth),
-          groupsAPI: new GroupsAPI(this.restAuth),
-          contentConnector: this.contentConnector,
           analytics: this.analytics,
           logger: this.logger
         };
@@ -83,7 +67,8 @@ export class GraphqlServer {
       cacheControl: {
         defaultMaxAge: 5
       },
-      cache: new RedisCache(`redis://:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}/${process.env.REDIS_DB}`)
+      cache: new RedisCache(`redis://:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}/${process.env.REDIS_DB}`),
+      subscriptions: false,
     });
 
     server.applyMiddleware({ app, path: "/" });
