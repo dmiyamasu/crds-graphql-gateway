@@ -1,7 +1,7 @@
-import { IAuthData } from "../auth/auth.interface";
-import { Analytics } from "../../config/analytics";
-import { Logger } from "../../config/logging";
 
+import { Analytics } from "../analytics";
+import { Logger } from "../logging";
+import { IAuthData } from "../auth/auth.interface";
 
 export interface IContext {
   authData: IAuthData;

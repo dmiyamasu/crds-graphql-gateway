@@ -1,6 +1,6 @@
 # crds-graphql-gateway
 
-Central GraphQL service to consume and graph all data micro services. Built and deployed to Kubernetes via TeamCity.
+Central GraphQL gateway to consume ççall graphql micro services. Built and deployed to Kubernetes via TeamCity.
 
 ## Quick Start
 It is recommended that you first become familiar with graphql theory and implementation here (https://www.apollographql.com/docs/). This project uses Apollo for creating the GraphQL server on top of Express. 

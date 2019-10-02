@@ -1,0 +1,12 @@
+[submodule "graphs/crds-graphql-personalization"]
+	path = graphs/crds-graphql-personalization
+	url = https://github.com/crdschurch/crds-graphql-personalization.git
+[submodule "graphs/crds-graphql-groups"]
+	path = graphs/crds-graphql-groups
+	url = https://github.com/crdschurch/crds-graphql-groups.git
+[submodule "graphs/crds-graphql-content"]
+	path = graphs/crds-graphql-content
+	url = https://github.com/crdschurch/crds-graphql-content.git
+[submodule "graphs/crds-graphql-user-profile"]
+	path = graphs/crds-graphql-user-profile
+	url = https://github.com/crdschurch/crds-graphql-user-profile.git

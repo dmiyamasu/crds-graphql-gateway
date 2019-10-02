@@ -3,10 +3,10 @@ import "reflect-metadata";
 import { GraphqlServer } from "../graphql";
 import { Server } from "../server";
 import { Types } from "./types";
-import { AuthConnector } from "../graph/auth/auth.connector";
 import { Analytics } from "../config/analytics";
 import { Logger } from "../config/logging";
 import { RestAuth } from "../sources/mp";
+import { AuthConnector } from "../config/auth/auth.connector";
 
 var container = new Container();
 
