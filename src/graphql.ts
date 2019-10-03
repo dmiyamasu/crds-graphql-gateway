@@ -35,13 +35,13 @@ export class GraphqlServer {
       serviceList: [
         {
           name: "users-profile",
-          url: process.env.CRDS_ENV == "local" ? "http://localhost:8001" : "crds-graphql-users-profile"
+          url: process.env.CRDS_ENV == "local" ? "http://localhost:8001" : "graphql-users-profile"
         },
-        { name: "groups", url: process.env.CRDS_ENV == "local" ? "http://localhost:8002" : "crds-graphql-groups" },
-        { name: "content", url: process.env.CRDS_ENV == "local" ? "http://localhost:8003" : "crds-graphql-content" },
+        { name: "groups", url: process.env.CRDS_ENV == "local" ? "http://localhost:8002" : "graphql-groups" },
+        { name: "content", url: process.env.CRDS_ENV == "local" ? "http://localhost:8003" : "graphql-content" },
         {
           name: "personalization",
-          url: process.env.CRDS_ENV == "local" ? "http://localhost:8004" : "crds-graphql-personalization"
+          url: process.env.CRDS_ENV == "local" ? "http://localhost:8004" : "graphql-personalization"
         }
       ],
       buildService: ({ name, url }) => {
