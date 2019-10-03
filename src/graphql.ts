@@ -51,7 +51,7 @@ export class GraphqlServer {
     const server = new ApolloServer({
       gateway,
       context: ({ req }) => {
-        if (req.body.query.includes("IntrospectionQuery")) return;
+        if (!req.body.query|| req.body.query.includes("IntrospectionQuery")) return;
         const token = req.headers.authorization || "";
         return this.authAPI.authenticate(token).then(user => {
           return user;
