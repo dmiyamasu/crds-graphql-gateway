@@ -33,10 +33,16 @@ export class GraphqlServer {
 
     const gateway = new ApolloGateway({
       serviceList: [
-        { name: "users-profile", url: process.env.CRDS_ENV == 'local' ? "http://localhost:8001" :  "crds-graphql-users-profile"},
-        { name: "groups", url: process.env.CRDS_ENV == 'local' ? "http://localhost:8002" :  "crds-graphql-groups"},
-        { name: "content", url: process.env.CRDS_ENV == 'local' ? "http://localhost:8003" :  "crds-graphql-content"},
-        { name: "personalization", url: process.env.CRDS_ENV == 'local' ? "http://localhost:8004" :  "crds-graphql-personalization"},
+        {
+          name: "users-profile",
+          url: process.env.CRDS_ENV == "local" ? "http://localhost:8001" : "crds-graphql-users-profile"
+        },
+        { name: "groups", url: process.env.CRDS_ENV == "local" ? "http://localhost:8002" : "crds-graphql-groups" },
+        { name: "content", url: process.env.CRDS_ENV == "local" ? "http://localhost:8003" : "crds-graphql-content" },
+        {
+          name: "personalization",
+          url: process.env.CRDS_ENV == "local" ? "http://localhost:8004" : "crds-graphql-personalization"
+        }
       ],
       buildService: ({ name, url }) => {
         return new RemoteGraphQLDataSource({
@@ -51,7 +57,7 @@ export class GraphqlServer {
     const server = new ApolloServer({
       gateway,
       context: ({ req }) => {
-        if (!req.body.query|| req.body.query.includes("IntrospectionQuery")) return;
+        if (!!!req.body.query || req.body.query.includes("IntrospectionQuery")) return;
         const token = req.headers.authorization || "";
         return this.authAPI.authenticate(token).then(user => {
           return user;
