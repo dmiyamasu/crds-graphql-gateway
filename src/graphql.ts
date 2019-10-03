@@ -33,16 +33,16 @@ export class GraphqlServer {
 
     const gateway = new ApolloGateway({
       serviceList: [
-        { name: "users-profile", url: "crds-graphql-users-profile" },
-        { name: "groups", url: "crds-graphql-graphql" },
-        { name: "content", url: "crds-graphql-content" },
-        { name: "personalization", url: "crds-graphql-personalization" }
+        { name: "users-profile", url: "http://localhost:8001" },
+        { name: "groups", url: "http://localhost:8002" },
+        { name: "content", url: "http://localhost:8003" },
+        { name: "personalization", url: "http://localhost:8004" }
       ],
       buildService: ({ name, url }) => {
         return new RemoteGraphQLDataSource({
           url,
           willSendRequest: async ({ request, context }) => {
-            request.http.headers.set("auth_data", JSON.stringify(context["authData"]));
+            if (context["authData"]) request.http.headers.set("auth_data", JSON.stringify(context["authData"]));
           }
         });
       }
