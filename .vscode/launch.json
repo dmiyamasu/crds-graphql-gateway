@@ -2,70 +2,57 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "node",
-      "request": "launch",
       "name": "gateway",
-      "program": "${workspaceFolder}/dist/index.js",
-      "outFiles": [
-        "${workspaceFolder}/**/*.js"
-      ],
-      "runtimeExecutable": "nodemon",
-      "restart": true,
-      "preLaunchTask": "build gateway"
-    },
-    {
       "type": "node",
       "request": "launch",
-      "name": "content graph",
-      "program": "${workspaceFolder}/graphs/crds-graphql-content/dist/index.js",
-      "runtimeExecutable": "nodemon",
-      "outFiles": [
-        "${workspaceFolder}/graphs/crds-graphql-content/**/*.js"
-      ],
-      "restart": true,
-      "preLaunchTask": "build content"
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "debug"],
+      "port": 9000,
+      "restart": true
     },
     {
+      "name": "user-profile",
       "type": "node",
       "request": "launch",
-      "name": "user-profile graph",
-      "program": "${workspaceFolder}/graphs/crds-graphql-user-profile/dist/index.js",
-      "runtimeExecutable": "nodemon",
-      "outFiles": [
-        "${workspaceFolder}/graphs/crds-graphql-user-profile/dist/**/*.js"
-      ],
-      "restart": true,
-      "preLaunchTask": "build user-profile"
+      "cwd": "${workspaceFolder}/graphs/crds-graphql-user-profile/",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "debug"],
+      "port": 9001,
+      "restart": true
     },
     {
+      "name": "content",
       "type": "node",
       "request": "launch",
-      "name": "groups graph",
-      "program": "${workspaceFolder}/graphs/crds-graphql-groups/dist/index.js",
-      "runtimeExecutable": "nodemon",
-      "outFiles": [
-        "${workspaceFolder}/graphs/crds-graphql-groups/**/*.js"
-      ],
-      "restart": true,
-      "preLaunchTask": "build groups"
+      "cwd": "${workspaceFolder}/graphs/crds-graphql-content/",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "debug"],
+      "port": 9003
     },
     {
+      "name": "groups",
       "type": "node",
       "request": "launch",
-      "name": "personalization graph",
-      "program": "${workspaceFolder}/graphs/crds-graphql-personalization/dist/index.js",
-      "runtimeExecutable": "nodemon",
-      "outFiles": [
-        "${workspaceFolder}/graphs/crds-graphql-personalization/**/*.js"
-      ],
-      "restart": true,
-      "preLaunchTask": "build personalization"
+      "cwd": "${workspaceFolder}/graphs/crds-graphql-groups/",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "debug"],
+      "port": 9002
     },
+    {
+      "name": "personalization",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/graphs/crds-graphql-personalization/",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run-script", "debug"],
+      "port": 9004
+    }
   ],
   "compounds": [
     {
       "name": "federation",
-      "configurations": ["content graph","user-profile graph", "groups graph", "personalization graph", "gateway"],
+      "configurations": ["groups", "personalization", "content", "user-profile", "gateway"]
     }
   ]
 }

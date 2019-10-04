@@ -30,7 +30,7 @@ export class GraphqlServer {
 
   public async start(): Promise<void> {
     let app = this.app;
-
+    
     const gateway = new ApolloGateway({
       serviceList: [
         {
