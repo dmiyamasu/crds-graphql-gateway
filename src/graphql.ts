@@ -30,15 +30,21 @@ export class GraphqlServer {
 
   public async start(): Promise<void> {
     let app = this.app;
-    
+
     const gateway = new ApolloGateway({
       serviceList: [
         {
           name: "users-profile",
           url: process.env.CRDS_ENV == "local" ? "http://localhost:8001" : "http://crds-graphql-user-profile"
         },
-        { name: "groups", url: process.env.CRDS_ENV == "local" ? "http://localhost:8002" : "http://crds-graphql-groups" },
-        { name: "content", url: process.env.CRDS_ENV == "local" ? "http://localhost:8003" : "http://crds-graphql-content" },
+        {
+          name: "groups",
+          url: process.env.CRDS_ENV == "local" ? "http://localhost:8002" : "http://crds-graphql-groups"
+        },
+        {
+          name: "content",
+          url: process.env.CRDS_ENV == "local" ? "http://localhost:8003" : "http://crds-graphql-content"
+        },
         {
           name: "personalization",
           url: process.env.CRDS_ENV == "local" ? "http://localhost:8004" : "http://crds-graphql-personalization"
@@ -49,6 +55,7 @@ export class GraphqlServer {
           url,
           willSendRequest: async ({ request, context }) => {
             if (context["authData"]) request.http.headers.set("auth_data", JSON.stringify(context["authData"]));
+            if (context["forceRefresh"]) request.http.headers.set("force_refresh", "true");
           }
         });
       }
@@ -59,8 +66,9 @@ export class GraphqlServer {
       context: ({ req }) => {
         if (!!!req.body.query || req.body.query.includes("IntrospectionQuery")) return;
         const token = req.headers.authorization || "";
+        const forceRefresh = req.headers.force_refresh === "true";
         return this.authAPI.authenticate(token).then(user => {
-          return user;
+          return { ...user, forceRefresh: forceRefresh };
         });
       },
       dataSources: (): any => {
@@ -77,15 +85,6 @@ export class GraphqlServer {
         this.logger.logError(error);
         return error;
       },
-      plugins: [
-        responseCachePlugin({
-          sessionId: requestContext => requestContext.request.http.headers.get("authorization") || null
-        })
-      ],
-      cacheControl: {
-        defaultMaxAge: 5
-      },
-      cache: new RedisCache(`redis://:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}/${process.env.REDIS_DB}`),
       subscriptions: false
     });
 

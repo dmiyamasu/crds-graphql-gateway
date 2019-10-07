@@ -28,7 +28,8 @@
       "cwd": "${workspaceFolder}/graphs/crds-graphql-content/",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run-script", "debug"],
-      "port": 9003
+      "port": 9003,
+      "restart": true
     },
     {
       "name": "groups",
@@ -37,7 +38,8 @@
       "cwd": "${workspaceFolder}/graphs/crds-graphql-groups/",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run-script", "debug"],
-      "port": 9002
+      "port": 9002,
+      "restart": true
     },
     {
       "name": "personalization",
@@ -46,7 +48,8 @@
       "cwd": "${workspaceFolder}/graphs/crds-graphql-personalization/",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run-script", "debug"],
-      "port": 9004
+      "port": 9004,
+      "restart": true
     }
   ],
   "compounds": [
