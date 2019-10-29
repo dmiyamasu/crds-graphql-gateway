@@ -1,87 +1,101 @@
-import { ApolloServer, makeExecutableSchema } from "apollo-server-express";
+import { ApolloServer } from "apollo-server-express";
 import { Express } from "express";
 import * as http from "http";
 import { inject, injectable } from "inversify";
 import { Types } from "./ioc/types";
-import schema from "./schema";
-import resolvers from "./resolvers";
-import { IAuthConnector } from "./graph/auth/auth.interface";
-import { IUsersConnector } from "./graph/users/users.interface";
-import { ISitesConnector } from "./graph/sites/sites.interface";
 import { RedisCache } from "apollo-server-cache-redis";
 import responseCachePlugin from "apollo-server-plugin-response-cache";
 import { Analytics } from "./config/analytics";
 import { Logger } from "./config/logging";
-import { IContentConnector } from "./graph/content/content.interface";
+import { IDataSources } from "./config/context/context.interface";
+import { IRestAuth, RestAuth } from "./sources/mp";
+import { ApolloGateway, RemoteGraphQLDataSource } from "@apollo/gateway";
+import { IAuthConnector } from "./config/auth/auth.interface";
+import os from "os";
 
 @injectable()
 export class GraphqlServer {
+  public set express(v: Express) {
+    this.app = v;
+  }
+  private app: Express;
+  private serverInstance: http.Server;
 
-    public set express(v: Express) {
-        this.app = v;
-    }
-    private app: Express;
-    private serverInstance: http.Server;
+  constructor(
+    @inject(Types.AuthConnector) private authAPI: IAuthConnector,
+    @inject(Types.Analytics) private analytics: Analytics,
+    @inject(Types.Logger) private logger: Logger,
+    @inject(Types.RestAuth) private restAuth: IRestAuth
+  ) {}
 
-    constructor(
-        @inject(Types.AuthConnector) private authConnector: IAuthConnector,
-        @inject(Types.UsersConnector) private usersConnector: IUsersConnector,
-        @inject(Types.SitesConnector) private sitesConnector: ISitesConnector,
-        @inject(Types.ContentConnector) private contentConnector: IContentConnector,
-        @inject(Types.Analytics) private analytics: Analytics,
-        @inject(Types.Logger) private logger: Logger
-    ) { }
+  public async start(): Promise<void> {
+    let app = this.app;
 
-    public async start(): Promise<void> {
-
-        let app = this.app;
-
-        const server = new ApolloServer({
-            schema: makeExecutableSchema({
-                typeDefs: schema,
-                resolvers,
-                inheritResolversFromInterfaces: true
-            }),
-            context: ({ req }) => {
-                if (req.body.query.includes('IntrospectionQuery')) return;
-                const token = req.headers.authorization || "";
-                return this.authConnector.authenticate(token).then((user) => {
-                    return user;
-                });
-            },
-            dataSources: (): any => {
-                return {
-                    usersConnector: this.usersConnector,
-                    sitesConnector: this.sitesConnector,
-                    contentConnector: this.contentConnector,
-                    analytics: this.analytics,
-                    logger: this.logger
-                };
-            },
-            formatResponse: response => {
-                this.logger.logResponseBody(response);
-                return response;
-            },
-            formatError: error => {
-                this.logger.logError(error);
-                return error;
-            },
-            plugins: [responseCachePlugin({
-                sessionId: (requestContext) => (requestContext.request.http.headers.get('authorization') || null),
-            })],
-            cacheControl: {
-                defaultMaxAge: 5,
-              },
-            cache: new RedisCache(`redis://:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}/${process.env.REDIS_DB}`),
-
+    const gateway = new ApolloGateway({
+      serviceList: [
+        {
+          name: "users-profile",
+          url: process.env.CRDS_ENV == "local" ? "http://localhost:8001" : "http://crds-graphql-user-profile"
+        },
+        {
+          name: "groups",
+          url: process.env.CRDS_ENV == "local" ? "http://localhost:8002" : "http://crds-graphql-groups"
+        },
+        {
+          name: "content",
+          url: process.env.CRDS_ENV == "local" ? "http://localhost:8003" : "http://crds-graphql-content"
+        },
+        {
+          name: "personalization",
+          url: process.env.CRDS_ENV == "local" ? "http://localhost:8004" : "http://crds-graphql-personalization"
+        }
+      ],
+      buildService: ({ name, url }) => {
+        return new RemoteGraphQLDataSource({
+          url,
+          willSendRequest: async ({ request, context }) => {
+            if (context["authData"]) request.http.headers.set("auth_data", JSON.stringify(context["authData"]));
+            if (context["forceRefresh"]) request.http.headers.set("force_refresh", "true");
+          }
         });
+      }
+    });
 
-        server.applyMiddleware({ app, path: "/" })
+    const server = new ApolloServer({
+      gateway,
+      context: ({ req }) => {
+        if (!!!req.body.query || req.body.query.includes("IntrospectionQuery")) return;
+        const token = req.headers.authorization || "";
+        const forceRefresh = req.headers.force_refresh === "true";
+        return this.authAPI.authenticate(token).then(user => {
+          return { ...user, forceRefresh: forceRefresh };
+        });
+      },
+      dataSources: (): any => {
+        return <IDataSources>{
+          analytics: this.analytics,
+          logger: this.logger
+        };
+      },
+      formatResponse: response => {
+        this.logger.logResponseBody(response);
+        return response;
+      },
+      formatError: error => {
+        this.logger.logError(error);
+        return error;
+      },
+      subscriptions: false
+    });
 
-        app.listen({ port: 8000 }, () => { console.log('listening on 8000') });
-    }
+    server.applyMiddleware({ app, path: "/" });
 
-    public stop() {
-        this.serverInstance.close();
-    }
+    app.listen({ port: 8000 }, () => {
+      this.restAuth.authorize();
+    });
+  }
+
+  public stop() {
+    this.serverInstance.close();
+  }
 }

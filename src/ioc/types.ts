@@ -1,13 +1,11 @@
 export const Types = {
     Config: Symbol("Config"),
     GraphQLServer: Symbol("GraphQLServer"),
-    UsersConnector: Symbol("UsersConnector"),
-    AuthConnector: Symbol("AuthConnector"),
-    Server: Symbol("Server"),
-    SitesConnector: Symbol("SitesConnector"),
-    Mongo: Symbol("Mongo"),
     Analytics: Symbol("Analytics"),
+    AuthConnector: Symbol("AuthConnector"),
     Logger: Symbol("Logger"),
+    ContentService: Symbol("ContentService"),
+    Server: Symbol("Server"),
     ContentConnector: Symbol("ContentConnector"),
-    ContentService: Symbol("ContentService")
+    RestAuth: Symbol("RestAuth"),
 };

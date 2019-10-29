@@ -1,5 +1,5 @@
-import { IAuthData } from "../graph/auth/auth.interface";
 import { AuthenticationError } from "apollo-server-express";
+import { IAuthData } from "./auth/auth.interface";
 
 export function authorize(authData: IAuthData, roles?: string[]): void {
     if (!authData) throw new AuthenticationError('Unauthorized.');
