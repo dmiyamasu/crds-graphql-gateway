@@ -1,33 +1,19 @@
-import express from "express";
-import { ApolloServer } from "apollo-server-express";
-import { Authentication, logging } from "./config";
+import "reflect-metadata";
+import container from "./ioc/inversify.config";
+import { Types } from "./ioc/types";
+import { Server } from "./server";
+import { Vault } from "crds-vault-node";
 
-const app = express();
+async function start() {
+  await new Vault(process.env.CRDS_ENV).process(["common", "graphql"]);
+  await sleep(1000);
+  return container.get<Server>(Types.Server).start();
+}
 
-import schema from "./schemas";
-import resolvers from "./resolvers";
-import { testData } from "./connectors";
+export const server = start();
 
-const server = new ApolloServer({
-  typeDefs: schema,
-  resolvers,
-  context: ({ req }) => {
-    // get the user token from the headers
-    const token = req.headers.authorization || "";
-    return Authentication(token);
-  },
-  formatResponse: response => {
-    logging.logResponseBody(response);
-    return response;
-  },
-  formatError: error => {
-    logging.logError(error);
-    return error;
-  }
-});
-
-server.applyMiddleware({ app, path: "/graphql" });
-
-app.listen({ port: 8000 }, () => {
-  console.log("Apollo Server on http://localhost:8000/graphql");
-});
+function sleep(ms){
+  return new Promise(resolve=>{
+      setTimeout(resolve,ms)
+  })
+}

@@ -4,3 +4,4 @@ dist
 newrelic_agent.log
 .env
 .envrc
+graphs/crds-graphql-user-profile
