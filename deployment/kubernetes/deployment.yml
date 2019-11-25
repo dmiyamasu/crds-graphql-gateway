@@ -48,3 +48,5 @@ spec:
               value: $CRDS_ENV
             - name: NEW_RELIC_LICENSE_KEY            
               value: $NR_INSTALL_KEY
+            - name: NEW_RELIC_DISTRIBUTED_TRACING_ENABLED
+              value: $NEW_RELIC_DISTRIBUTED_TRACING_ENABLED
