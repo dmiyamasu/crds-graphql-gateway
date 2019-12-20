@@ -35,27 +35,44 @@ export class GraphqlServer {
       serviceList: [
         {
           name: "users-profile",
-          url: process.env.CRDS_ENV == "local" ? "http://localhost:8001" : "http://crds-graphql-user-profile"
+          url:
+            process.env.CRDS_ENV == "local"
+              ? "http://localhost:8001"
+              : "http://crds-graphql-user-profile"
         },
         {
           name: "groups",
-          url: process.env.CRDS_ENV == "local" ? "http://localhost:8002" : "http://crds-graphql-groups"
+          url:
+            process.env.CRDS_ENV == "local"
+              ? "http://localhost:8002"
+              : "http://crds-graphql-groups"
         },
         {
           name: "content",
-          url: process.env.CRDS_ENV == "local" ? "http://localhost:8003" : "http://crds-graphql-content"
+          url:
+            process.env.CRDS_ENV == "local"
+              ? "http://localhost:8003"
+              : "http://crds-graphql-content"
         },
         {
           name: "personalization",
-          url: process.env.CRDS_ENV == "local" ? "http://localhost:8004" : "http://crds-graphql-personalization"
+          url:
+            process.env.CRDS_ENV == "local"
+              ? "http://localhost:8004"
+              : "http://crds-graphql-personalization"
         }
       ],
       buildService: ({ name, url }) => {
         return new RemoteGraphQLDataSource({
           url,
           willSendRequest: async ({ request, context }) => {
-            if (context["authData"]) request.http.headers.set("auth_data", JSON.stringify(context["authData"]));
-            if (context["forceRefresh"]) request.http.headers.set("force_refresh", "true");
+            if (context["authData"])
+              request.http.headers.set(
+                "auth_data",
+                JSON.stringify(context["authData"])
+              );
+            if (context["forceRefresh"])
+              request.http.headers.set("force_refresh", "true");
           }
         });
       }
@@ -64,7 +81,8 @@ export class GraphqlServer {
     const server = new ApolloServer({
       gateway,
       context: ({ req }) => {
-        if (!!!req.body.query || req.body.query.includes("IntrospectionQuery")) return;
+        if (!!!req.body.query || req.body.query.includes("IntrospectionQuery"))
+          return;
         const token = req.headers.authorization || "";
         const forceRefresh = req.headers.force_refresh === "true";
         return this.authAPI.authenticate(token).then(user => {
@@ -85,7 +103,10 @@ export class GraphqlServer {
         this.logger.logError(error);
         return error;
       },
-      subscriptions: false
+      subscriptions: false,
+      engine: {
+        apiKey: process.env.ENGINE_API_KEY
+      }
     });
 
     server.applyMiddleware({ app, path: "/" });
