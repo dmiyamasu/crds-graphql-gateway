@@ -77,10 +77,10 @@ export class GraphqlServer {
           logger: this.logger
         };
       },
-      formatResponse: response => {
-        this.logger.logResponseBody(response);
-        return response;
-      },
+      // formatResponse: response => {
+      //   this.logger.logResponseBody(response);
+      //   return response;
+      // },
       formatError: error => {
         this.logger.logError(error);
         return error;
