@@ -4,7 +4,7 @@ metadata:
   name: graphql-gateway
   namespace: api
 spec: 
-  replicas: 2
+  replicas: 4
   selector:
     matchLabels:
       app: graphql-gateway
